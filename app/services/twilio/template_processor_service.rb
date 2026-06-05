@@ -14,7 +14,15 @@ class Twilio::TemplateProcessorService
   private
 
   def find_template
-    channel.content_templates&.dig('templates')&.find do |template|
+    templates = channel.content_templates&.dig('templates')
+    return nil if templates.blank?
+
+    if template_params['content_sid'].present?
+      exact = templates.find { |t| t['content_sid'] == template_params['content_sid'] }
+      return exact if exact
+    end
+
+    templates.find do |template|
       template['friendly_name'] == template_params['name'] &&
         template['language'] == (template_params['language'] || 'en') &&
         template['status'] == 'approved'
